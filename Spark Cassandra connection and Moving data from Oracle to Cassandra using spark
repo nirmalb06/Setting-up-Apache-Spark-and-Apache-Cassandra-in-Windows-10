@@ -1,0 +1,159 @@
+Installing Spark in Windows 10
+--------------------------------
+Requirements :
+----------------
+Install a Java Development Kit (JDK)
+Install spark (http://spark.apache.org/)
+set up SPARK_HOME and PATH environment variables
+install winutils.exe and HADOOP_HOME
+Download Scala IDE (bundled with Eclipse) - (Scala-ide.org)
+
+#1 -> Install Java JDA
+-----------------------
+Install JDK
+then set environment variables for it.
+Environment variables :
+-----------------------
+JAVA_HOME (New variable)
+PATH - up[date (%JAVA_HOME%\bin)
+
+#2 -> Download winutils.exe and Set it's Path
+------------------------------------------------
+Spark won't work with out winutils.exe on windows.
+Download winutil.exe file
+
+Go to c:/ --> Create a New folder and rename it to "winutils" --> inside it create a new folder rename it as "bin" --> Paste the winutils.exe file here
+
+then set environment variables for it.
+Environment variables :
+-------------------------
+Create a new Environment Variable 
+HADOOP_HOME --> for the Variable value give the win utils.exe path that you have created above.
+
+
+#3 -> Download Spark
+--------------------
+Spark Release- Latest Version
+Package Type - Pre-Built for Hadoop 2.7 or Later
+Download and Extract it and Move to a different Folder in your Drive then set environment variables for it.
+
+Environment variables :
+-------------------------
+Create a new Environment Variable 
+SPARK_HOME --> for the Variable value give the spark path that you have created above.
+PATH --> up[date (%SPARK_HOME%\bin)
+
+#4 -> Download Scala IDE
+-------------------------
+Download Scala IDE (bundled with Eclipse) - (Scala-ide.org)
+Extract it to a new Folder, It's basically a Eclipse software file for scala
+
+
+
+Cassandra Set up and Installation
+---------------------------------
+Download Cassandra in official website
+Make sure Python 2.7 has already been installed in the system and respective environment variables are already set for python.
+Extract downloaded Cassandra file in to the local drive
+Add the bin path of the extracted file to the environment variables
+To Start Cassandra Server --> Type Cassandra in the system command prompt
+to start sql shell --> Type cqlsh (This will work only in 2.7 python version)
+
+Reference : https://www.edureka.co/blog/how-to-open-cqlsh-of-cassandra-installed-on-windows/
+https://stackoverflow.com/questions/41703631/warning-on-starting-cqlsh
+
+connecting to Oracle using spark
+---------------------------------
+Step 1:
+-------
+Need to have oracle connector OJDBC6.jar to be in spark's Jar folder.
+Step 2:
+-------
+import sqlContext.implicits._
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+val employee = sqlContext.load("jdbc", Map("url" -> "jdbc:oracle:thin:HR/HR@//10.90.1.105:1521/dev", "dbtable" -> "HR.employee"))
+
+
+connecting to Cassandra using spark References
+------------------------------------------------
+https://www.youtube.com/watch?v=A-j0IShmG1U
+https://www.youtube.com/watch?v=JCbyr18oaMQ
+https://coderwall.com/p/o9bkjg/setup-spark-with-cassandra-connector
+https://www.learningjournal.guru/courses/spark/spark-foundation-training/spark-cassandra-connector/
+http://grepcode.com/snapshot/repo1.maven.org/maven2/com.datastax.spark/spark-cassandra-connector-java_2.10/1.0.0-rc4
+https://gist.github.com/chbatey/be40894a5f8a6fed582d
+http://batey.info/spark-cassandra-basics-connecting-to.html
+
+Step 1:
+-------
+Method 1:
+---------
+spark-shell --packages datastax:spark-cassandra-connector:2.0.1-s_2.11
+IF error in the above then use the below alternate method
+
+Method 2:
+----------
+download spark-cassandra-connector-2.3.0-s_2.11.jar from the below link
+https://spark-packages.org/package/datastax/spark-cassandra-connector
+After downloading use the below command by starting spark
+spark-shell --jars spark-cassandra-connector-2.3.0-s_2.11.jar,jsr166e-1.1.0.jar
+
+Step 2:
+-------
+import com.datastax.spark.connector._
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.cassandra._
+import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.spark.connector.rdd.ReadConf
+
+spark.setCassandraConf(Map( "spark.cassandra.connection.host" -> "127.0.0.1", 
+                                "spark.cassandra.connection.port" -> "9042"));
+
+val df_read = spark.read
+.format("org.apache.spark.sql.cassandra")
+.option("spark.cassandra.connection.host","127.0.0.1")
+.option("spark.cassandra.connection.port","9042")
+.option("keyspace","killrvideo")
+.option("table","videos")
+.load()
+df_read.show
+
+coping data from Oracle to Cassandra using Spark :
+-------------------------------------------------------
+Objective : Getting Data from a Table in Oracle(Relational database) and moving it to Cassandra using Spark
+spark-shell --jars spark-cassandra-connector-2.3.0-s_2.11.jar,jsr166e-1.1.0.jar
+import com.datastax.spark.connector._
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.cassandra._
+import com.datastax.spark.connector.cql.CassandraConnectorConf
+import com.datastax.spark.connector.rdd.ReadConf
+val sqlContext = new org.apache.spark.sql.SQLContext(sc);
+val employees = sqlContext.load("jdbc", Map("url" -> "jdbc:oracle:thin:HR/HR@//10.90.1.105:1521/dev", "dbtable" -> "HR.employee"));
+spark.setCassandraConf(Map( "spark.cassandra.connection.host" -> "127.0.0.1", 
+                                "spark.cassandra.connection.port" -> "9042"));
+
+
+employees.write
+.format("org.apache.spark.sql.cassandra")
+.mode("overwrite")
+.option("confirm.truncate","true")
+.option("spark.cassandra.connection.host","127.0.0.1")
+.option("spark.cassandra.connection.port","9042")
+.option("keyspace","hr")
+.option("table","employee")
+.save()
+
+val employees = spark.read
+.format("org.apache.spark.sql.cassandra")
+.option("spark.cassandra.connection.host","127.0.0.1")
+.option("spark.cassandra.connection.port","9042")
+.option("keyspace","hr")
+.option("table","employee")
+.load()
+employees.show
+
+
