@@ -1,0 +1,27 @@
+Standalone Code to connect to Cassandra Database using Java :
+----------------------------------------------------------------
+
+package com.cassandra.cassandrademo1;
+
+import java.util.List;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+
+public class CassandraConnector {
+
+	public static void main(String[] args) {
+		Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").withPort(9042).build();
+		Session session = cluster.connect();
+		System.out.println("session object---" + session);
+		session.execute("use killrvideo");
+		ResultSet resultSet = session.execute("select * from users");
+		List<Row> results = resultSet.all();
+		for (Row row : results) {
+			System.out.println(row.getObject(0) + "  " + row.getString(3));
+		}
+		session.close();
+	}
+}
